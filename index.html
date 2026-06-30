@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastPage - Cotizador Ultra Rápido</title>
+  <meta name="description" content="Cotiza tu proyecto web en menos de 1 minuto. Velocidad extrema y atención inmediata vía WhatsApp.">
+  
+  <!-- Preconectar a Google Fonts para optimizar la velocidad de carga de tipografía -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* VARIABLES DE DISEÑO (SISTEMA DE COLORES Y EFECTOS TECH) */
+    :root {
+      --bg-dark: #060913;
+      --card-bg: rgba(10, 15, 30, 0.65);
+      --card-border: rgba(0, 240, 255, 0.15);
+      --accent-cyan: #00f0ff;
+      --accent-blue: #0072ff;
+      --accent-purple: #8b5cf6;
+      --accent-green: #25d366;
+      --accent-green-hover: #128c7e;
+      --accent-red: #ff4a5a;
+      --text-primary: #ffffff;
+      --text-secondary: #94a3b8;
+      --font-outfit: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ESTILOS GLOBALES */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-outfit);
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    /* CANVAS DE FONDO DINÁMICO */
+    #canvas-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* CABECERA Y LOGO */
+    .site-header {
+      width: 100%;
+      max-width: 1200px;
+      padding: 2rem 1.5rem 1rem 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      fill: var(--accent-cyan);
+      filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.6));
+      animation: logo-glow 3s infinite ease-in-out;
+    }
+
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .main-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 1.5rem;
+      z-index: 10;
+    }
+
+    /* TARJETA DEL COTIZADOR (GLASSMORPHISM) */
+    .quiz-card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 
+                  0 0 50px 0 rgba(0, 240, 255, 0.03);
+      padding: 2.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.5s ease;
+    }
+
+    .quiz-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+      opacity: 0.7;
+    }
+
+    /* BARRA DE PROGRESO */
+    .progress-wrapper {
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-outfit);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(-5px);
+    }
+
+    .back-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .back-btn:hover {
+      color: var(--accent-cyan);
+    }
+
+    .back-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .progress-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-left: auto;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+      border-radius: 10px;
+      box-shadow: 0 0 10px var(--accent-cyan);
+      transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* PASOS Y TRANSICIÓN DE VISTAS */
+    .step-pane {
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .step-pane.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .step-pane.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* PREGUNTAS */
+    .step-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 1.75rem;
+      color: var(--text-primary);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* INPUTS DE TEXTO (ESTILO TECH LIMPIO) */
+    .input-group {
+      position: relative;
+      margin-bottom: 2rem;
+      width: 100%;
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 1.1rem 1.25rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      font-family: var(--font-outfit);
+      font-size: 1.1rem;
+      color: #fff;
+      transition: var(--transition-smooth);
+      outline: none;
+    }
+
+    .text-input:focus {
+      border-color: var(--accent-cyan);
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), 
+                  inset 0 0 10px rgba(0, 240, 255, 0.05);
+    }
+
+    .text-input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    .input-error-msg {
+      color: var(--accent-red);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      display: none;
+      animation: shake 0.4s ease-in-out;
+    }
+
+    /* BOTONES DE ACCIÓN / SIGUIENTE */
+    .btn-action {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border: none;
+      border-radius: 14px;
+      color: var(--bg-dark);
+      font-family: var(--font-outfit);
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 1.1rem 2rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.75rem;
+      transition: var(--transition-smooth);
+      box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 240, 255, 0.45);
+    }
+
+    .btn-action:active {
+      transform: translateY(1px);
+    }
+
+    /* OPCIONES EN GRID DE BOTONES RÁPIDOS */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .btn-option {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      color: var(--text-secondary);
+      font-family: var(--font-outfit);
+      font-size: 1.05rem;
+      font-weight: 500;
+      padding: 1.25rem 1rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .btn-option:hover {
+      background: rgba(0, 240, 255, 0.06);
+      border-color: rgba(0, 240, 255, 0.4);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 240, 255, 0.1);
+    }
+
+    .btn-option.selected {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 114, 255, 0.15));
+      border-color: var(--accent-cyan);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+    }
+
+    /* COMPONENTE DINÁMICO "OTRO" (PASO 2) */
+    .other-input-wrapper {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                  opacity 0.3s ease;
+      margin-top: 1rem;
+      width: 100%;
+    }
+
+    .other-input-wrapper.visible {
+      max-height: 160px;
+      opacity: 1;
+      margin-top: 1.5rem;
+    }
+
+    /* PANTALLA DE ÉXITO (PASO 5) */
+    .success-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .success-icon-wrapper {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .success-icon-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70px;
+      height: 70px;
+      background: rgba(37, 211, 102, 0.15);
+      border-radius: 50%;
+      filter: blur(12px);
+      animation: pulse-glow 2s infinite ease-in-out;
+    }
+
+    .success-icon {
+      width: 54px;
+      height: 54px;
+      fill: var(--accent-green);
+      position: relative;
+      z-index: 2;
+    }
+
+    /* RESUMEN DE COTIZACIÓN (ESTILO TICKET) */
+    .ticket-summary {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      text-align: left;
+      position: relative;
+    }
+
+    .ticket-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.5rem;
+    }
+
+    .ticket-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .ticket-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .ticket-label {
+      color: var(--text-secondary);
+    }
+
+    .ticket-value {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* CHECKBOX ESTILIZADO (TICKET DE ACEPTACIÓN) */
+    .checkbox-container {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      text-align: left;
+      cursor: pointer;
+      margin-bottom: 2rem;
+      width: 100%;
+      padding: 1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: var(--transition-smooth);
+    }
+
+    .checkbox-container:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .checkbox-container.invalid {
+      border-color: rgba(255, 74, 90, 0.4);
+      background: rgba(255, 74, 90, 0.03);
+      animation: shake 0.5s ease-in-out;
+    }
+
+    .checkbox-input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+
+    .custom-checkbox {
+      width: 22px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: var(--transition-smooth);
+    }
+
+    .checkbox-container:hover .custom-checkbox {
+      border-color: var(--accent-cyan);
+    }
+
+    .checkbox-input:checked ~ .custom-checkbox {
+      background: var(--accent-green);
+      border-color: var(--accent-green);
+      box-shadow: 0 0 10px rgba(37, 211, 102, 0.4);
+    }
+
+    .custom-checkbox svg {
+      width: 14px;
+      height: 14px;
+      fill: #fff;
+      display: none;
+    }
+
+    .checkbox-input:checked ~ .custom-checkbox svg {
+      display: block;
+    }
+
+    .checkbox-label {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      user-select: none;
+    }
+
+    .checkbox-label strong {
+      color: #fff;
+    }
+
+    /* BOTÓN WHATSAPP DE ALTA CONVERSIÓN */
+    .btn-whatsapp {
+      background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-hover) 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.25rem;
+      border: none;
+      border-radius: 14px;
+      padding: 1.25rem 2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.85rem;
+      width: 100%;
+      transition: var(--transition-smooth);
+      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+      animation: pulse-button 2s infinite;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-whatsapp:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-whatsapp:active {
+      transform: translateY(1px);
+    }
+
+    .btn-whatsapp svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    /* PIE DE PÁGINA (GENERACIÓN DE CONFIANZA) */
+    .site-footer {
+      width: 100%;
+      padding: 1.5rem 1rem 2rem 1rem;
+      text-align: center;
+      z-index: 10;
+    }
+
+    .trust-badges {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 0.75rem;
+      opacity: 0.5;
+    }
+
+    .trust-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+    }
+
+    .trust-badge svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    .copyright-text {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      opacity: 0.4;
+    }
+
+    /* ANIMACIONES KEYFRAMES */
+    @keyframes logo-glow {
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.4)); }
+      50% { filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.8)); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+      50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.9; }
+    }
+
+    @keyframes pulse-button {
+      0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.45); }
+      70% { box-shadow: 0 0 0 12px rgba(37, 211, 102, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    /* ADAPTABILIDAD PARA DISPOSITIVOS MÓVILES */
+    @media (max-width: 480px) {
+      .quiz-card {
+        padding: 1.75rem 1.5rem;
+        border-radius: 20px;
+      }
+      
+      .step-title {
+        font-size: 1.45rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .options-grid {
+        gap: 0.75rem;
+      }
+
+      .btn-option {
+        padding: 1rem 0.75rem;
+        font-size: 0.95rem;
+        border-radius: 12px;
+      }
+
+      .text-input, .btn-action, .btn-whatsapp {
+        padding: 1rem;
+        font-size: 1rem;
+        border-radius: 12px;
+      }
+
+      .checkbox-container {
+        padding: 0.75rem;
+      }
+
+      .checkbox-label {
+        font-size: 0.85rem;
+      }
+
+      .logo-text {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Elemento de Fondo Interactivo (Efecto de velocidad) -->
+  <canvas id="canvas-bg"></canvas>
+
+  <!-- Logo de FastPage -->
+  <header class="site-header">
+    <a href="#" class="logo-container">
+      <svg class="logo-icon" viewBox="0 0 24 24">
+        <path d="M19 9h-4V3H9v12h4v6l6-12z"/>
+      </svg>
+      <span class="logo-text">FASTPAGE</span>
+    </a>
+  </header>
+
+  <!-- Contenedor Principal de Cotización -->
+  <main class="main-content">
+    <div class="quiz-card" id="quiz-card">
+      
+      <!-- Encabezado de Progreso del Quiz -->
+      <div class="progress-wrapper">
+        <div class="progress-header">
+          <button type="button" class="back-btn" id="back-btn" aria-label="Volver al paso anterior">
+            <svg viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            Atrás
+          </button>
+          <span class="progress-text" id="progress-text">Paso 1 de 5</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+
+      <!-- Formularios de Cotización Paso a Paso -->
+      <div class="steps-container">
+
+        <!-- PASO 1: Nombre de Empresa -->
+        <div class="step-pane active visible" data-step="1">
+          <h2 class="step-title">¿Cuál es el nombre de tu empresa?</h2>
+          <div class="input-group">
+            <input type="text" id="company-name" class="text-input" placeholder="Nombre de tu negocio o marca..." autocomplete="off">
+            <div class="input-error-msg" id="company-name-error">Por favor ingresa un nombre para continuar.</div>
+          </div>
+          <button type="button" class="btn-action" id="btn-step-1">
+            Continuar
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- PASO 2: Rubro o Actividad -->
+        <div class="step-pane" data-step="2">
+          <h2 class="step-title">¿A qué se dedica tu empresa?</h2>
+          <div class="options-grid">
+            <button type="button" class="btn-option" data-value="Construcción">Construcción</button>
+            <button type="button" class="btn-option" data-value="Ingeniería">Ingeniería</button>
+            <button type="button" class="btn-option" data-value="Diseño">Diseño</button>
+            <button type="button" class="btn-option" data-value="Inmobiliaria">Inmobiliaria</button>
+            <button type="button" class="btn-option" data-value="Marca Personal">Marca Personal</button>
+            <button type="button" class="btn-option" data-value="Otro" id="btn-option-other">Otro</button>
+          </div>
+          
+          <!-- Contenedor desplegable para cuando se escoge "Otro" -->
+          <div class="other-input-wrapper" id="other-input-wrapper">
+            <div class="input-group" style="margin-bottom: 1.25rem;">
+              <input type="text" id="custom-sector" class="text-input" placeholder="¿A qué área se dedica?" autocomplete="off">
+              <div class="input-error-msg" id="custom-sector-error">Por favor especifica tu rubro.</div>
+            </div>
+            <button type="button" class="btn-action" id="btn-step-2-other">
+              Continuar
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- PASO 3: Plazo del Proyecto -->
+        <div class="step-pane" data-step="3">
+          <h2 class="step-title">¿Para cuándo necesitas el proyecto?</h2>
+          <div class="options-grid">
+            <button type="button" class="btn-option" data-value="Inmediato">Inmediato</button>
+            <button type="button" class="btn-option" data-value="Dentro de una semana">Dentro de una semana</button>
+            <button type="button" class="btn-option" data-value="Dentro de un mes">Dentro de un mes</button>
+            <button type="button" class="btn-option" data-value="Aún no lo sé">Aún no lo sé</button>
+          </div>
+        </div>
+
+        <!-- PASO 4: Dominio Web -->
+        <div class="step-pane" data-step="4">
+          <h2 class="step-title">¿Ya cuentas con un dominio web?</h2>
+          <div class="options-grid">
+            <button type="button" class="btn-option" data-value="Sí">Sí</button>
+            <button type="button" class="btn-option" data-value="No">No</button>
+          </div>
+        </div>
+
+        <!-- PASO 5: Pantalla de Éxito / WhatsApp -->
+        <div class="step-pane" data-step="5">
+          <div class="success-container">
+            <div class="success-icon-wrapper">
+              <div class="success-icon-bg"></div>
+              <svg class="success-icon" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            
+            <h2 class="step-title" style="margin-bottom: 0.5rem;">¡Tu cotización está lista!</h2>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;">
+              Hemos recopilado tus datos con éxito. Presiona el botón para enviarlos por WhatsApp.
+            </p>
+
+            <!-- Ticket Resumen de Datos -->
+            <div class="ticket-summary">
+              <div class="ticket-title">Resumen de Cotización</div>
+              <div class="ticket-row">
+                <span class="ticket-label">Empresa:</span>
+                <span class="ticket-value" id="summary-company">-</span>
+              </div>
+              <div class="ticket-row">
+                <span class="ticket-label">Rubro:</span>
+                <span class="ticket-value" id="summary-sector">-</span>
+              </div>
+              <div class="ticket-row">
+                <span class="ticket-label">Plazo:</span>
+                <span class="ticket-value" id="summary-deadline">-</span>
+              </div>
+              <div class="ticket-row">
+                <span class="ticket-label">Dominio:</span>
+                <span class="ticket-value" id="summary-domain">-</span>
+              </div>
+            </div>
+
+            <!-- Checkbox estilizado obligatorio -->
+            <label class="checkbox-container" id="whatsapp-terms-container">
+              <input type="checkbox" id="whatsapp-terms-checkbox" class="checkbox-input">
+              <div class="custom-checkbox">
+                <svg viewBox="0 0 24 24">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+              </div>
+              <span class="checkbox-label">
+                Acepto que me hablará un <strong>experto por WhatsApp</strong>
+              </span>
+            </label>
+
+            <!-- Botón WhatsApp de Acción Principal -->
+            <button type="button" class="btn-whatsapp" id="btn-submit">
+              <svg viewBox="0 0 24 24">
+                <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.37 5.054L2 22l5.077-1.33a9.907 9.907 0 004.82 1.258h.004c5.507 0 9.99-4.474 9.99-9.982a9.957 9.957 0 00-2.925-7.06A9.919 9.919 0 0012.012 2zm5.736 14.156c-.237.666-1.374 1.233-1.894 1.284-.474.047-.942.228-3.037-.64-2.525-1.047-4.137-3.613-4.263-3.782-.125-.165-1.025-1.363-1.025-2.599 0-1.237.647-1.844.877-2.09.23-.247.502-.309.67-.309.167 0 .334.002.48.009.149.008.35-.056.55.427.204.494.697 1.696.758 1.82.062.124.103.268.02.433-.082.165-.124.268-.247.412-.124.144-.26.32-.372.433-.124.124-.253.258-.11.505.144.247.64.1.64.1l-.01.01c.42.37.893.682 1.41.93.535.253 1.05.417 1.488.583.474.18.913.155 1.258.103.386-.057 1.185-.484 1.35-.953.165-.47.165-.871.114-.958-.051-.086-.185-.134-.39-.237-.206-.103-1.185-.584-1.37-.65-.185-.066-.32-.103-.454.1-.134.205-.515.65-.63.783-.114.134-.227.15-.433.047-.206-.104-.871-.32-1.66-1.025-.613-.547-1.024-1.22-1.144-1.427-.12-.206-.013-.318.09-.42.093-.092.206-.24.309-.36.103-.12.137-.2.206-.34.07-.134.034-.253-.017-.356-.052-.103-.454-1.092-.622-1.498-.164-.395-.345-.34-.475-.347-.123-.006-.268-.007-.412-.007-.144 0-.38.055-.58.272a2.76 2.76 0 00-.862 2.06c0 1.21.88 2.378 1.003 2.544z"/>
+              </svg>
+              ¡Vamos!
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Pie de Página Fiduciario -->
+  <footer class="site-footer">
+    <div class="trust-badges">
+      <div class="trust-badge">
+        <svg viewBox="0 0 24 24">
+          <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+        </svg>
+        Conexión Segura
+      </div>
+      <div class="trust-badge">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+        </svg>
+        Garantía de Privacidad
+      </div>
+    </div>
+    <div class="copyright-text">
+      FastPage &copy; 2026. Todos los derechos reservados.
+    </div>
+  </footer>
+
+  <script>
+    /* ==========================================
+       1. ANIMACIÓN HTML5 CANVAS (EFECTO HIPERESPACIO)
+       ========================================== */
+    const canvas = document.getElementById('canvas-bg');
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+
+    // Configuración del canvas y partículas
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    
+    // Adaptar cantidad de partículas según el dispositivo
+    const maxParticles = width < 768 ? 45 : 90;
+    const particles = [];
+
+    class Particle {
+      constructor() {
+        this.reset(true);
+      }
+
+      reset(init = false) {
+        // Si es inicialización, esparcir por todo el ancho. Si es reset, empezar desde la derecha.
+        this.x = init ? Math.random() * width : width + Math.random() * 100;
+        this.y = Math.random() * height;
+        this.length = 20 + Math.random() * 80;
+        this.speed = 8 + Math.random() * 18;
+        
+        // Asignar colores aleatorios dentro de la gama tech
+        const rand = Math.random();
+        if (rand < 0.5) {
+          this.color = 'rgba(0, 240, 255, ' + (0.15 + Math.random() * 0.3) + ')'; // Cian
+        } else if (rand < 0.8) {
+          this.color = 'rgba(0, 114, 255, ' + (0.15 + Math.random() * 0.3) + ')'; // Azul
+        } else {
+          this.color = 'rgba(139, 92, 246, ' + (0.1 + Math.random() * 0.25) + ')'; // Púrpura
+        }
+        
+        this.thickness = 1 + Math.random() * 2;
+      }
+
+      update() {
+        this.x -= this.speed;
+        // Si sale de la pantalla por la izquierda, se resetea a la derecha
+        if (this.x + this.length < 0) {
+          this.reset(false);
+        }
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.lineWidth = this.thickness;
+        ctx.strokeStyle = this.color;
+        
+        // Efecto difuminado en los extremos de la línea
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x + this.length, this.y);
+        ctx.stroke();
+      }
+    }
+
+    // Inicializar partículas
+    for (let i = 0; i < maxParticles; i++) {
+      particles.push(new Particle());
+    }
+
+    // Loop de animación optimizado
+    function animate() {
+      // Dibujar fondo semi-transparente negro para crear estelas/motion blur
+      ctx.fillStyle = 'rgba(6, 9, 19, 0.25)';
+      ctx.fillRect(0, 0, width, height);
+
+      // Dibujar y actualizar partículas
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    // Redimensionar canvas de forma fluida
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        // Re-inicializar partículas si cambia drásticamente
+        particles.length = 0;
+        const newMax = width < 768 ? 45 : 90;
+        for (let i = 0; i < newMax; i++) {
+          particles.push(new Particle());
+        }
+      }, 150);
+    });
+
+    // Iniciar loop
+    animate();
+
+
+    /* ==========================================
+       2. LÓGICA DEL COTIZADOR MULTI-PASO (QUIZ)
+       ========================================== */
+    const totalSteps = 5;
+    let currentStep = 1;
+
+    // Almacenamiento de respuestas del usuario
+    const userData = {
+      empresa: '',
+      rubro: '',
+      plazo: '',
+      dominio: ''
+    };
+
+    // Referencias DOM
+    const cardElement = document.getElementById('quiz-card');
+    const stepPanes = document.querySelectorAll('.step-pane');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const backBtn = document.getElementById('back-btn');
+
+    // Inicializar progreso al cargar
+    updateProgress();
+
+    // Función para actualizar barra de progreso y número de paso
+    function updateProgress() {
+      const progressPercent = ((currentStep - 1) / (totalSteps - 1)) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+      progressText.innerText = `Paso ${currentStep} de ${totalSteps}`;
+
+      // Mostrar/ocultar botón de retroceso
+      if (currentStep > 1 && currentStep < totalSteps) {
+        backBtn.classList.add('visible');
+      } else {
+        backBtn.classList.remove('visible');
+      }
+
+      // Cambiar borde de la tarjeta en el paso de éxito para resaltar conversión
+      if (currentStep === 5) {
+        cardElement.style.borderColor = 'var(--accent-green)';
+      } else {
+        cardElement.style.borderColor = 'var(--card-border)';
+      }
+    }
+
+    // Función de navegación entre pasos con micro-animaciones
+    function goToStep(targetStep) {
+      const currentPane = document.querySelector(`.step-pane[data-step="${currentStep}"]`);
+      const targetPane = document.querySelector(`.step-pane[data-step="${targetStep}"]`);
+
+      if (!currentPane || !targetPane) return;
+
+      // 1. Quitar animación de visibilidad del actual
+      currentPane.classList.remove('visible');
+      
+      // 2. Esperar a que la transición de opacidad termine (200ms)
+      setTimeout(() => {
+        currentPane.classList.remove('active');
+        
+        // 3. Activar el nuevo contenedor
+        targetPane.classList.add('active');
+        
+        // Forzar reflow para que el navegador registre el cambio de display antes de animar
+        targetPane.offsetHeight;
+        
+        // 4. Añadir animación de entrada
+        targetPane.classList.add('visible');
+        
+        currentStep = targetStep;
+        updateProgress();
+
+        // Foco automático del input del Paso 1 para agilizar la entrada de datos en móvil
+        if (currentStep === 1) {
+          document.getElementById('company-name').focus();
+        }
+      }, 200);
+    }
+
+    // Manejador del botón Atrás
+    backBtn.addEventListener('click', () => {
+      if (currentStep > 1) {
+        goToStep(currentStep - 1);
+      }
+    });
+
+    // Foco inicial en input de empresa al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.getElementById('company-name').focus();
+      }, 500);
+    });
+
+
+    /* --- PASO 1: Validación y acción --- */
+    const companyInput = document.getElementById('company-name');
+    const companyError = document.getElementById('company-name-error');
+    const btnStep1 = document.getElementById('btn-step-1');
+
+    function validateStep1() {
+      const val = companyInput.value.trim();
+      if (val.length === 0) {
+        companyError.style.display = 'block';
+        companyInput.style.borderColor = 'var(--accent-red)';
+        companyInput.focus();
+        return false;
+      }
+      companyError.style.display = 'none';
+      companyInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+      userData.empresa = val;
+      return true;
+    }
+
+    btnStep1.addEventListener('click', () => {
+      if (validateStep1()) {
+        goToStep(2);
+      }
+    });
+
+    // Permitir avanzar con "Enter" en el input
+    companyInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (validateStep1()) {
+          goToStep(2);
+        }
+      }
+    });
+
+
+    /* --- PASO 2: Rubros (Selección directa o campo "Otro") --- */
+    const sectorButtons = document.querySelectorAll('.step-pane[data-step="2"] .btn-option');
+    const otherWrapper = document.getElementById('other-input-wrapper');
+    const customSectorInput = document.getElementById('custom-sector');
+    const customSectorError = document.getElementById('custom-sector-error');
+    const btnStep2Other = document.getElementById('btn-step-2-other');
+
+    sectorButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        // Limpiar selección previa
+        sectorButtons.forEach(btn => btn.classList.remove('selected'));
+        
+        const value = button.getAttribute('data-value');
+        button.classList.add('selected');
+
+        if (value === 'Otro') {
+          // Desplegar campo de texto dinámicamente
+          otherWrapper.classList.add('visible');
+          customSectorInput.focus();
+        } else {
+          // Ocultar sección "Otro" si estaba abierta y avanzar inmediatamente
+          otherWrapper.classList.remove('visible');
+          userData.rubro = value;
+          goToStep(3);
+        }
+      });
+    });
+
+    function validateStep2Other() {
+      const val = customSectorInput.value.trim();
+      if (val.length === 0) {
+        customSectorError.style.display = 'block';
+        customSectorInput.style.borderColor = 'var(--accent-red)';
+        customSectorInput.focus();
+        return false;
+      }
+      customSectorError.style.display = 'none';
+      customSectorInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+      userData.rubro = `Otro (${val})`;
+      return true;
+    }
+
+    btnStep2Other.addEventListener('click', () => {
+      if (validateStep2Other()) {
+        goToStep(3);
+      }
+    });
+
+    customSectorInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (validateStep2Other()) {
+          goToStep(3);
+        }
+      }
+    });
+
+
+    /* --- PASO 3: Plazo del proyecto (Selección directa) --- */
+    const deadlineButtons = document.querySelectorAll('.step-pane[data-step="3"] .btn-option');
+    
+    deadlineButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        deadlineButtons.forEach(btn => btn.classList.remove('selected'));
+        button.classList.add('selected');
+        
+        userData.plazo = button.getAttribute('data-value');
+        goToStep(4);
+      });
+    });
+
+
+    /* --- PASO 4: Dominio Web (Selección directa y preparación final) --- */
+    const domainButtons = document.querySelectorAll('.step-pane[data-step="4"] .btn-option');
+    
+    domainButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        domainButtons.forEach(btn => btn.classList.remove('selected'));
+        button.classList.add('selected');
+        
+        userData.dominio = button.getAttribute('data-value');
+        
+        // Llenar el resumen (ticket) del Paso 5 antes de mostrarlo
+        document.getElementById('summary-company').innerText = userData.empresa;
+        document.getElementById('summary-sector').innerText = userData.rubro;
+        document.getElementById('summary-deadline').innerText = userData.plazo;
+        document.getElementById('summary-domain').innerText = userData.dominio;
+
+        goToStep(5);
+      });
+    });
+
+
+    /* --- PASO 5: Éxito, Validación de Checkbox y Enlace a WhatsApp --- */
+    const termsContainer = document.getElementById('whatsapp-terms-container');
+    const termsCheckbox = document.getElementById('whatsapp-terms-checkbox');
+    const btnSubmit = document.getElementById('btn-submit');
+
+    // Quitar advertencia visual cuando el usuario marca el checkbox
+    termsCheckbox.addEventListener('change', () => {
+      if (termsCheckbox.checked) {
+        termsContainer.classList.remove('invalid');
+      }
+    });
+
+    btnSubmit.addEventListener('click', () => {
+      // Validar checkbox obligatorio
+      if (!termsCheckbox.checked) {
+        termsContainer.classList.add('invalid');
+        // Quitar la clase invalid después de la animación para permitir que se repita si vuelven a fallar
+        setTimeout(() => {
+          termsContainer.classList.remove('invalid');
+          termsContainer.classList.add('invalid'); // re-trigger si es necesario
+        }, 500);
+        return;
+      }
+
+      // Animación de carga para feedback visual premium previo a redirección
+      btnSubmit.innerHTML = `
+        <svg class="animate-spin" style="animation: spin-loader 1s linear infinite; width: 20px; height: 20px;" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" stroke-dasharray="31.4 31.4"></circle>
+        </svg>
+        Conectando...
+      `;
+      btnSubmit.style.pointerEvents = 'none';
+
+      // Construcción del mensaje formateado para WhatsApp
+      const intro = '*¡Hola! Acabo de cotizar mi proyecto:*';
+      const empresaStr = `* Empresa: ${userData.empresa}`;
+      const rubroStr = `* Rubro: ${userData.rubro}`;
+      const plazoStr = `* Plazo: ${userData.plazo}`;
+      const dominioStr = `* Dominio Web: ${userData.dominio}`;
+      
+      const fullText = `${intro}\n${empresaStr}\n${rubroStr}\n${plazoStr}\n${dominioStr}`;
+      
+      // Encodear texto para URL
+      const encodedText = encodeURIComponent(fullText);
+      const phoneNumber = '56987843957';
+      const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedText}`;
+
+      // Redirigir al usuario tras un pequeño delay (genera sensación de procesamiento tech y asegura feedback)
+      setTimeout(() => {
+        window.location.href = whatsappURL;
+      }, 700);
+    });
+
+    // Definición de animación extra de spinner en línea para JS
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `
+      @keyframes spin-loader {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(styleSheet);
+  </script>
+</body>
+</html>
