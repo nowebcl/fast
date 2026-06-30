@@ -1044,6 +1044,11 @@
         currentStep = targetStep;
         updateProgress();
 
+        // Rastrear avances de pasos en Meta Pixel de forma dinámica
+        if (typeof fbq === 'function') {
+          fbq('trackCustom', `Paso_${targetStep}`);
+        }
+
         // Foco automático del input del Paso 1 para agilizar la entrada de datos en móvil
         if (currentStep === 1) {
           document.getElementById('company-name').focus();
@@ -1248,8 +1253,12 @@
       const phoneNumber = '56987843957';
       const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedText}`;
 
-      // Redirigir síncronamente al usuario para evitar bloqueadores de popups en Safari/Chrome de móviles
-      window.location.href = whatsappURL;
+      // Redirigir al usuario tras un breve retardo de 300ms para asegurar que el navegador
+      // tenga tiempo de despachar y completar el envío de la conversión (Lead)
+      // a los servidores de Meta antes de descargar la página.
+      setTimeout(() => {
+        window.location.href = whatsappURL;
+      }, 300);
     });
 
     // Definición de animación extra de spinner en línea para JS
