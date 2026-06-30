@@ -839,8 +839,8 @@
 
             <!-- Botón WhatsApp de Acción Principal -->
             <button type="button" class="btn-whatsapp" id="btn-submit">
-              <svg viewBox="0 0 24 24">
-                <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.37 5.054L2 22l5.077-1.33a9.907 9.907 0 004.82 1.258h.004c5.507 0 9.99-4.474 9.99-9.982a9.957 9.957 0 00-2.925-7.06A9.919 9.919 0 0012.012 2zm5.736 14.156c-.237.666-1.374 1.233-1.894 1.284-.474.047-.942.228-3.037-.64-2.525-1.047-4.137-3.613-4.263-3.782-.125-.165-1.025-1.363-1.025-2.599 0-1.237.647-1.844.877-2.09.23-.247.502-.309.67-.309.167 0 .334.002.48.009.149.008.35-.056.55.427.204.494.697 1.696.758 1.82.062.124.103.268.02.433-.082.165-.124.268-.247.412-.124.144-.26.32-.372.433-.124.124-.253.258-.11.505.144.247.64.1.64.1l-.01.01c.42.37.893.682 1.41.93.535.253 1.05.417 1.488.583.474.18.913.155 1.258.103.386-.057 1.185-.484 1.35-.953.165-.47.165-.871.114-.958-.051-.086-.185-.134-.39-.237-.206-.103-1.185-.584-1.37-.65-.185-.066-.32-.103-.454.1-.134.205-.515.65-.63.783-.114.134-.227.15-.433.047-.206-.104-.871-.32-1.66-1.025-.613-.547-1.024-1.22-1.144-1.427-.12-.206-.013-.318.09-.42.093-.092.206-.24.309-.36.103-.12.137-.2.206-.34.07-.134.034-.253-.017-.356-.052-.103-.454-1.092-.622-1.498-.164-.395-.345-.34-.475-.347-.123-.006-.268-.007-.412-.007-.144 0-.38.055-.58.272a2.76 2.76 0 00-.862 2.06c0 1.21.88 2.378 1.003 2.544z"/>
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm6.59-4.846c1.66.986 3.294 1.503 4.908 1.504 5.428 0 9.845-4.421 9.849-9.85.002-2.63-1.018-5.101-2.871-6.958C16.63 2.01 14.154.988 11.5.988c-5.432 0-9.851 4.421-9.856 9.853-.001 1.76.46 3.473 1.334 4.985L1.93 20.21l4.717-1.056zM17.65 14.4c-.3-.15-1.775-.875-2.05-1-.275-.1-.475-.15-.675.15-.2.3-.775 1-1 1.25-.225.25-.45.275-.75.125-1.35-.675-2.35-1.175-3.225-2.675-.225-.375.225-.35.65-.775.375-.375.45-.6.675-1 .075-.15-.025-.3-.125-.5-.1-.2-.675-1.625-.925-2.225-.25-.6-.5-.5-.675-.5-.175 0-.375-.025-.575-.025s-.525.075-.8 1c-.275.3-1.05 1.1-1.05 2.675 0 1.575 1.15 3.1 1.3 3.3.15.2 2.25 3.625 5.525 4.9.775.3 1.375.5 1.85.65.775.25 1.475.225 2.025.15.625-.1 1.775-.725 2.025-1.4.25-.675.25-1.25.175-1.4-.075-.15-.275-.25-.575-.4z"/>
               </svg>
               ¡Vamos!
             </button>
@@ -1210,16 +1210,13 @@
     btnSubmit.addEventListener('click', () => {
       // Validar checkbox obligatorio
       if (!termsCheckbox.checked) {
+        termsContainer.classList.remove('invalid');
+        void termsContainer.offsetWidth; // Forzar reflow para reiniciar animación
         termsContainer.classList.add('invalid');
-        // Quitar la clase invalid después de la animación para permitir que se repita si vuelven a fallar
-        setTimeout(() => {
-          termsContainer.classList.remove('invalid');
-          termsContainer.classList.add('invalid'); // re-trigger si es necesario
-        }, 500);
         return;
       }
 
-      // Animación de carga para feedback visual premium previo a redirección
+      // Animación de carga para feedback visual premium
       btnSubmit.innerHTML = `
         <svg class="animate-spin" style="animation: spin-loader 1s linear infinite; width: 20px; height: 20px;" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" stroke-dasharray="31.4 31.4"></circle>
@@ -1251,10 +1248,8 @@
       const phoneNumber = '56987843957';
       const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedText}`;
 
-      // Redirigir al usuario tras un pequeño delay (genera sensación de procesamiento tech y asegura feedback)
-      setTimeout(() => {
-        window.location.href = whatsappURL;
-      }, 700);
+      // Redirigir síncronamente al usuario para evitar bloqueadores de popups en Safari/Chrome de móviles
+      window.location.href = whatsappURL;
     });
 
     // Definición de animación extra de spinner en línea para JS
